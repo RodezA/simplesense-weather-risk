@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+import plotly.graph_objects as go
 import streamlit as st
 from app.clients.weather import fetch_weather
 from app.engine.risk import assess_hourly_risk, RiskLevel
@@ -191,8 +192,18 @@ if run:
     scores = [h["risk_score"] for h in hourly]
     levels = [h["risk_level"] for h in hourly]
 
-    chart_data = {"Hour": times, "Risk Score": scores}
-    st.bar_chart(chart_data, x="Hour", y="Risk Score", color="#e07b39", height=220)
+    bar_colors = [RISK_COLORS[lvl] for lvl in levels]
+    fig = go.Figure(go.Bar(x=times, y=scores, marker_color=bar_colors))
+    fig.update_layout(
+        height=220,
+        margin=dict(t=10, b=10, l=0, r=0),
+        xaxis_title=f"Hour ({tz_abbr})",
+        yaxis_title="Risk Score",
+        yaxis_range=[0, 100],
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
     # ── Hourly detail table ───────────────────────────────────────────────────
     st.subheader("Hourly breakdown")
